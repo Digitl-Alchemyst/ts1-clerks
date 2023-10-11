@@ -9,6 +9,7 @@ const nextConfig = {
       'links.papareact.com',
       'cloud.appwrite.io',
       'cdn.sanity.io',
+      'img.clerk.com',
     ],
   },
 };
