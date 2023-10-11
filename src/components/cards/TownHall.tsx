@@ -14,8 +14,8 @@ const TownHall = () => {
             <Image
               src='/DAS.png'
               alt='Profile Image'
-              width={100}
-              height={100}
+              width={45}
+              height={45}
               className='w-full rounded-full border-4 border-tsl/60'
             />
           </div>
@@ -37,8 +37,8 @@ const TownHall = () => {
             <Image
               src='/untele.png'
               alt='Profile Image'
-              width={100}
-              height={100}
+              width={45}
+              height={45}
               className='w-full rounded-full border-4 border-tsl/60'
             />
           </div>
@@ -60,8 +60,8 @@ const TownHall = () => {
             <Image
               src='/wallstape.jpg'
               alt='Profile Image'
-              width={100}
-              height={100}
+              width={45}
+              height={45}
               className='w-full rounded-full border-4 border-tsl/60'
             />
           </div>
