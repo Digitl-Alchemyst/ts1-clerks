@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useForm } from 'react-hook-form';
 import { Button } from '@/c/ui/button';
@@ -19,7 +19,9 @@ import Image from 'next/image';
 import { ChangeEvent, useState } from 'react';
 import { Textarea } from '../ui/textarea';
 import { isBase64Image } from '@/util/util';
-import { useUploadThing } from '@/l/uploadthing'
+import { useUploadThing } from '@/l/uploadthing';
+import { updateUser } from '@/util/actions/user.action';
+import { usePathname, useRouter } from 'next/navigation';
 
 interface Props {
   user: {
@@ -28,14 +30,18 @@ interface Props {
     username: string;
     name: string;
     bio: string;
+    location: string;
     image: string;
-  }
+  };
   btnTitle: string;
 }
 
 const AccountProfile = ({ user, btnTitle }: Props) => {
   const [avatar, setAvatar] = useState<File[]>([]);
   const { startUpload } = useUploadThing('media');
+
+  const router = useRouter();
+  const pathname = usePathname();
 
   const form = useForm({
     resolver: zodResolver(UserValidation),
@@ -44,48 +50,64 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
       name: user?.name || '',
       username: user?.username || '',
       bio: user?.bio || '',
+      location: user?.location || '',
     },
   });
 
-  const handleImage = (e: ChangeEvent<HTMLInputElement>, fieldChange: (value: string) => void ) => {
+  const handleImage = (
+    e: ChangeEvent<HTMLInputElement>,
+    fieldChange: (value: string) => void,
+  ) => {
     e.preventDefault();
 
     const fileReader = new FileReader();
 
-    if(e.target.files && e.target.files.length > 0) {
+    if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
 
       setAvatar(Array.from(e.target.files));
 
-      if(!file.type.includes('image')) return;
+      if (!file.type.includes('image')) return;
 
       fileReader.onload = async (event) => {
         const imageDataUrl = event.target?.result?.toString() || '';
 
         fieldChange(imageDataUrl);
-      }
+      };
 
       fileReader.readAsDataURL(file);
-
     }
-
-  }
+  };
 
   const onSubmit = async (values: z.infer<typeof UserValidation>) => {
     const blob = values.profile_photo;
 
     const hasImageChanged = isBase64Image(blob);
 
-    if(hasImageChanged) {
+    if (hasImageChanged) {
       const imgRes = await startUpload(avatar);
 
-      if(imgRes && imgRes[0].url) {
+      if (imgRes && imgRes[0].url) {
         values.profile_photo = imgRes[0].url;
       }
     }
 
-    //TODO: Update User Profile in DB
-  }
+    await updateUser({
+      username: values.username,
+      name: values.name,
+      location: values.location,
+      bio: values.bio,
+      image: values.profile_photo,
+      userId: user.id,
+      path: pathname,
+    });
+
+    if (pathname === '/profile/edit') {
+      router.back();
+    } else {
+      router.push('/');
+    }
+  };
 
   return (
     <Form {...form}>
@@ -132,6 +154,25 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
         />
         <FormField
           control={form.control}
+          name='username'
+          render={({ field }) => (
+            <FormItem className='flex w-full items-center gap-4'>
+              <FormLabel className='text-lg font-semibold text-slate-300'>
+                Username:
+              </FormLabel>
+              <FormControl className='flex-1 text-base font-semibold text-slate-300'>
+                <Input
+                  type='text'
+                  placeholder='Enter your username'
+                  className='!important border-dark-4 ml-7 max-w-xl border bg-slate-200 text-slate-700 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0'
+                  {...field}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name='name'
           render={({ field }) => (
             <FormItem className='flex w-full items-center gap-4'>
@@ -151,17 +192,17 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
         />
         <FormField
           control={form.control}
-          name='username'
+          name='location'
           render={({ field }) => (
             <FormItem className='flex w-full items-center gap-4'>
               <FormLabel className='text-lg font-semibold text-slate-300'>
-                Username:
+                Location:
               </FormLabel>
               <FormControl className='flex-1 text-base font-semibold text-slate-300'>
                 <Input
                   type='text'
-                  placeholder='Enter your username'
-                  className='!important border-dark-4 ml-7 max-w-xl border bg-slate-200 text-slate-700 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0'
+                  placeholder='Where are you from?'
+                  className='!important border-dark-4 ml-11 max-w-xl border bg-slate-200 text-slate-700 focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0'
                   {...field}
                 />
               </FormControl>
@@ -187,10 +228,15 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
             </FormItem>
           )}
         />
-        <Button type='submit' className=' bg-slate-200 hover:bg-slate-400 shadow-md shadow-slate-500 hover:text-slate-200 text-slate-700 mx-auto px-5 font-bold text-lg py-2 flex items-center justify-center'>Submit</Button>
+        <Button
+          type='submit'
+          className=' mx-auto flex items-center justify-center bg-slate-200 px-5 py-2 text-lg font-bold text-slate-700 shadow-md shadow-slate-500 hover:bg-slate-400 hover:text-slate-200'
+        >
+          Submit
+        </Button>
       </form>
     </Form>
   );
-}
+};
 
-export default AccountProfile
+export default AccountProfile;
