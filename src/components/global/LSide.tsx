@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { UserButton, UserActivation } from '@clerk/nextjs';
+import { UserButton } from '@clerk/nextjs';
 import { LSideLinks } from '@/const';
 import { AiFillNotification } from 'react-icons/ai';
 import { BsThreeDots } from 'react-icons/bs';
@@ -54,11 +54,13 @@ const LSide = () => {
         })}
 
         {/* Post Bulletin Button  */}
+        <Link href='./post-bulletin'>
         <button className='mt-10  rounded-full border border-tsl/60 bg-tsd px-4 py-3 text-center text-xl font-bold transition duration-200 hover:border-tsl/40 hover:bg-opacity-60 hover:text-slate-400'>
           <div className='flex items-center justify-center gap-x-3 font-medium'>
             <AiFillNotification className='h-7 w-7' /> Post Bulletin
           </div>
         </button>
+        </Link>
       </div>
 
       {/* User Info  */}
